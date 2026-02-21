@@ -109,15 +109,9 @@ export default defineConfig({
         dir: 'rtl',
         icons: [
           {
-            src: '/Graphitube/icon-192.png',
-            sizes: '192x192',
-            type: 'image/png',
-            purpose: 'any maskable'
-          },
-          {
-            src: '/Graphitube/icon-512.png',
-            sizes: '512x512',
-            type: 'image/png',
+            src: '/Graphitube/icon.svg',
+            sizes: '192x192 512x512',
+            type: 'image/svg+xml',
             purpose: 'any maskable'
           }
         ],
@@ -150,6 +144,9 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: false,
     manifest: true,
+    // Ensure all paths are relative to base
+    assetsDir: 'assets',
+    emptyOutDir: true,
     commonjsOptions: {
       include: [/three/, /node_modules/],
     },

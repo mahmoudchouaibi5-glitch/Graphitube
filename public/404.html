@@ -2,25 +2,14 @@
 <html lang="ar" dir="rtl">
   <head>
     <meta charset="UTF-8" />
+    <meta http-equiv="refresh" content="0;url=/Graphitube/" />
     <title>Redirecting...</title>
     <script>
-      // GitHub Pages SPA redirect hack
-      // This script takes the current URL and converts the path into a query string
-      // parameter for the index.html page, which will then parse it and route accordingly
-      
-      const pathSegmentsToKeep = 1; // Change to 0 if using root domain, 1 for /repo-name/
-      
-      const path = window.location.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/';
-      const redirect = window.location.pathname.slice(path.length - 1) + window.location.search + window.location.hash;
-      
-      // Store the redirect URL
-      sessionStorage.setItem('redirect', redirect);
-      
-      // Redirect to the base URL
-      window.location.replace(path);
+      // Redirect to home page for SPA routing
+      window.location.href = '/Graphitube/';
     </script>
   </head>
   <body>
-    <p>جاري التحميل... / Loading...</p>
+    <p>Redirecting to <a href="/Graphitube/">Graphitube</a>...</p>
   </body>
 </html>
