@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Simple SW Test</title>
+  <style>
+    body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #0f0; }
+    button { padding: 10px 20px; margin: 5px; font-size: 16px; cursor: pointer; }
+    #log { background: #000; padding: 10px; margin-top: 20px; min-height: 300px; }
+    .line { margin: 2px 0; }
+  </style>
+</head>
+<body>
+  <h1>🔧 Simple Service Worker Test</h1>
+  
+  <button onclick="testFetch()">1. Test Fetch sw.js</button>
+  <button onclick="registerSW()">2. Register SW</button>
+  <button onclick="checkStatus()">3. Check Status</button>
+  <button onclick="unregisterAll()">4. Unregister All</button>
+  <button onclick="clearLog()">Clear Log</button>
+  
+  <div id="log"></div>
+
+  <script>
+    const logEl = document.getElementById('log');
+    
+    function log(msg) {
+      const line = document.createElement('div');
+      line.className = 'line';
+      line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      logEl.appendChild(line);
+      console.log(msg);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+    
+    function clearLog() {
+      logEl.innerHTML = '';
+    }
+    
+    log(`Location: ${window.location.href}`);
+    log(`Origin: ${window.location.origin}`);
+    log(`SW supported: ${'serviceWorker' in navigator}`);
+    
+    async function testFetch() {
+      log('\n=== TESTING FETCH ===');
+      
+      const paths = [
+        '/Graphitube/sw.js',
+        '/Graphitube/sw-simple.js',
+        'sw.js',
+        'sw-simple.js',
+      ];
+      
+      for (const path of paths) {
+        try {
+          const url = new URL(path, window.location.origin).href;
+          log(`Trying: ${path} → ${url}`);
+          
+          const res = await fetch(url);
+          log(`  Status: ${res.status} ${res.statusText}`);
+          
+          if (res.ok) {
+            const text = await res.text();
+            log(`  ✅ SUCCESS! Size: ${text.length} bytes`);
+            log(`  Preview: ${text.substring(0, 50)}...`);
+          }
+        } catch (err) {
+          log(`  ❌ ERROR: ${err.message}`);
+        }
+      }
+    }
+    
+    async function registerSW() {
+      log('\n=== REGISTERING SERVICE WORKER ===');
+      
+      if (!('serviceWorker' in navigator)) {
+        log('❌ Service Worker not supported!');
+        return;
+      }
+      
+      try {
+        // Try the simple one first
+        const swPath = '/Graphitube/sw-simple.js';
+        log(`Registering: ${swPath}`);
+        
+        const reg = await navigator.serviceWorker.register(swPath, {
+          scope: '/Graphitube/'
+        });
+        
+        log('✅ ✅ ✅ REGISTERED!');
+        log(`Scope: ${reg.scope}`);
+        log(`Installing: ${reg.installing?.state || 'none'}`);
+        log(`Waiting: ${reg.waiting?.state || 'none'}`);
+        log(`Active: ${reg.active?.state || 'none'}`);
+        
+        // Listen for state changes
+        const sw = reg.installing || reg.waiting || reg.active;
+        if (sw) {
+          sw.addEventListener('statechange', () => {
+            log(`SW state changed to: ${sw.state}`);
+          });
+        }
+        
+      } catch (err) {
+        log(`❌ REGISTRATION FAILED!`);
+        log(`Error: ${err.message}`);
+        log(`Stack: ${err.stack}`);
+      }
+    }
+    
+    async function checkStatus() {
+      log('\n=== CHECKING STATUS ===');
+      
+      if (!('serviceWorker' in navigator)) {
+        log('❌ Service Worker not supported!');
+        return;
+      }
+      
+      const regs = await navigator.serviceWorker.getRegistrations();
+      log(`Registrations found: ${regs.length}`);
+      
+      regs.forEach((reg, i) => {
+        log(`\nRegistration ${i + 1}:`);
+        log(`  Scope: ${reg.scope}`);
+        log(`  Active: ${reg.active?.state || 'none'}`);
+        log(`  Installing: ${reg.installing?.state || 'none'}`);
+        log(`  Waiting: ${reg.waiting?.state || 'none'}`);
+      });
+      
+      if (navigator.serviceWorker.controller) {
+        log('\n✅ Page is controlled by SW');
+        log(`Controller: ${navigator.serviceWorker.controller.scriptURL}`);
+      } else {
+        log('\n⚠️ Page is NOT controlled (refresh needed)');
+      }
+    }
+    
+    async function unregisterAll() {
+      log('\n=== UNREGISTERING ALL ===');
+      
+      const regs = await navigator.serviceWorker.getRegistrations();
+      
+      for (const reg of regs) {
+        log(`Unregistering: ${reg.scope}`);
+        await reg.unregister();
+      }
+      
+      log(`✅ Unregistered ${regs.length} registration(s)`);
+    }
+  </script>
+</body>
+</html>

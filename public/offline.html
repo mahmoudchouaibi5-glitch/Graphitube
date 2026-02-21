@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>غير متصل - Graphitube</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+      background: linear-gradient(135deg, #8B4513 0%, #D2691E 100%);
+      color: white;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 500px;
+    }
+    
+    .icon {
+      font-size: 5rem;
+      margin-bottom: 2rem;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { 
+        opacity: 1; 
+        transform: scale(1);
+      }
+      50% { 
+        opacity: 0.5; 
+        transform: scale(0.95);
+      }
+    }
+    
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+    
+    p {
+      font-size: 1.1rem;
+      margin-bottom: 2rem;
+      opacity: 0.9;
+      line-height: 1.6;
+    }
+    
+    .lang-switch {
+      margin-bottom: 2rem;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+    
+    .lang-btn {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      padding: 8px 16px;
+      font-size: 0.9rem;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .lang-btn.active {
+      background: white;
+      color: #8B4513;
+    }
+    
+    .lang-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+    
+    button.retry {
+      background: white;
+      color: #8B4513;
+      border: none;
+      padding: 14px 36px;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    
+    button.retry:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    }
+    
+    .features {
+      margin-top: 2rem;
+      text-align: right;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 1.5rem;
+      border-radius: 15px;
+    }
+    
+    .features h3 {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+    
+    .features ul {
+      list-style: none;
+      padding: 0;
+    }
+    
+    .features li {
+      padding: 0.5rem 0;
+      font-size: 0.95rem;
+      opacity: 0.9;
+    }
+    
+    .features li::before {
+      content: "✓ ";
+      color: #90EE90;
+      font-weight: bold;
+      margin-left: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">📡</div>
+    
+    <div class="lang-switch">
+      <button class="lang-btn active" onclick="setLang('ar')">العربية</button>
+      <button class="lang-btn" onclick="setLang('fr')">Français</button>
+      <button class="lang-btn" onclick="setLang('ma')">الدارجة</button>
+    </div>
+    
+    <div id="content-ar" class="content active">
+      <h1>أنت غير متصل بالإنترنت</h1>
+      <p>يبدو أنك فقدت الاتصال بالإنترنت. لا تقلق، لا يزال بإمكانك استخدام التطبيق مع المحتوى المخزن مؤقتاً.</p>
+      <button class="retry" onclick="window.location.reload()">حاول مرة أخرى</button>
+      
+      <div class="features">
+        <h3>الميزات المتاحة دون اتصال:</h3>
+        <ul>
+          <li>تصفح المطابخ والصالونات</li>
+          <li>استخدام مصمم المطبخ ثلاثي الأبعاد</li>
+          <li>ملء نماذج الطلبات (سيتم إرسالها لاحقاً)</li>
+          <li>حفظ التصميمات محلياً</li>
+        </ul>
+      </div>
+    </div>
+    
+    <div id="content-fr" class="content" style="display: none;">
+      <h1>Vous êtes hors ligne</h1>
+      <p>Il semble que vous ayez perdu votre connexion Internet. Ne vous inquiétez pas, vous pouvez toujours utiliser l'application avec le contenu mis en cache.</p>
+      <button class="retry" onclick="window.location.reload()">Réessayer</button>
+      
+      <div class="features" style="text-align: left;">
+        <h3>Fonctionnalités disponibles hors ligne:</h3>
+        <ul>
+          <li>Parcourir les cuisines et salons</li>
+          <li>Utiliser le planificateur de cuisine 3D</li>
+          <li>Remplir les formulaires de demande (envoi ultérieur)</li>
+          <li>Sauvegarder les conceptions localement</li>
+        </ul>
+      </div>
+    </div>
+    
+    <div id="content-ma" class="content" style="display: none;">
+      <h1>نتا مامربوطش بلانترنيت</h1>
+      <p>كايبان ليك قطعتي لكونيكسيون. ماكاين مشكيل، مازال تقدر تستعمل لابليكاسيون بلي كاينة فالكاش.</p>
+      <button class="retry" onclick="window.location.reload()">عاود جرّب</button>
+      
+      <div class="features">
+        <h3>شنو كاينة بلا انترنيت:</h3>
+        <ul>
+          <li>تشوف المطابخ والصالونات</li>
+          <li>تستعمل المصمم ديال المطبخ 3D</li>
+          <li>تعمّر الفورمات (غادي يتبعتو مورا)</li>
+          <li>تحفظ التصاميم فالتيليفون</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    function setLang(lang) {
+      // Hide all content
+      document.querySelectorAll('.content').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.lang-btn').forEach(el => el.classList.remove('active'));
+      
+      // Show selected content
+      document.getElementById('content-' + lang).style.display = 'block';
+      event.target.classList.add('active');
+      
+      // Update direction
+      if (lang === 'fr') {
+        document.documentElement.setAttribute('dir', 'ltr');
+      } else {
+        document.documentElement.setAttribute('dir', 'rtl');
+      }
+    }
+  </script>
+</body>
+</html>

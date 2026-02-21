@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>SW Test</title>
+  <style>
+    body { 
+      background: #000; 
+      color: #0f0; 
+      font-family: monospace; 
+      padding: 20px; 
+    }
+    .success { color: #0f0; }
+    .error { color: #f00; }
+  </style>
+</head>
+<body>
+  <h1>Service Worker Test</h1>
+  <div id="output"></div>
+  
+  <script>
+    const output = document.getElementById('output');
+    
+    function log(msg, isError = false) {
+      const p = document.createElement('p');
+      p.className = isError ? 'error' : 'success';
+      p.textContent = msg;
+      output.appendChild(p);
+      console.log(msg);
+    }
+    
+    log('1. Checking SW support...');
+    
+    if (!('serviceWorker' in navigator)) {
+      log('ERROR: Service Worker not supported!', true);
+    } else {
+      log('OK: Service Worker supported!');
+      
+      log('2. Testing file /Graphitube/sw.js...');
+      
+      fetch('/Graphitube/sw.js')
+        .then(r => {
+          if (r.ok) {
+            log('OK: File exists!');
+            return r.text();
+          } else {
+            log('ERROR: File not found! Status: ' + r.status, true);
+          }
+        })
+        .then(text => {
+          if (text) {
+            log('OK: File size: ' + text.length + ' bytes');
+            log('3. Registering SW...');
+            
+            return navigator.serviceWorker.register('/Graphitube/sw.js', {
+              scope: '/Graphitube/',
+              type: 'classic'
+            });
+          }
+        })
+        .then(reg => {
+          if (reg) {
+            log('SUCCESS: SW Registered!');
+            log('Scope: ' + reg.scope);
+            
+            setTimeout(() => {
+              navigator.serviceWorker.getRegistrations().then(regs => {
+                log('Total registrations: ' + regs.length);
+              });
+            }, 2000);
+          }
+        })
+        .catch(err => {
+          log('ERROR: ' + err.message, true);
+        });
+    }
+  </script>
+</body>
+</html>

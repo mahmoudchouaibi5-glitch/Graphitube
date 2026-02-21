@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SW Debug</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Courier New', monospace;
+      background: #0a0a0a;
+      color: #0f0;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    h1 { color: #0ff; margin-bottom: 20px; }
+    button {
+      background: #0f0;
+      color: #000;
+      border: none;
+      padding: 12px 24px;
+      margin: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      font-family: inherit;
+    }
+    button:hover { background: #0ff; }
+    .box {
+      border: 2px solid #0f0;
+      padding: 15px;
+      margin: 15px 0;
+      background: #111;
+    }
+    .success { color: #0f0; }
+    .error { color: #f00; }
+    .warning { color: #ff0; }
+    pre {
+      background: #000;
+      padding: 10px;
+      overflow-x: auto;
+      border-left: 3px solid #0f0;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔧 Service Worker Debug Tool</h1>
+  
+  <div class="box">
+    <h2>📍 Environment</h2>
+    <pre id="env">Loading...</pre>
+  </div>
+  
+  <div class="box">
+    <h2>🔍 File Tests</h2>
+    <button onclick="testFile('/Graphitube/sw.js')">Test /Graphitube/sw.js</button>
+    <button onclick="testFile('/sw.js')">Test /sw.js</button>
+    <button onclick="testFile('sw.js')">Test sw.js (relative)</button>
+    <pre id="fileTests">Click buttons to test...</pre>
+  </div>
+  
+  <div class="box">
+    <h2>📝 Registration Tests</h2>
+    <button onclick="register('/Graphitube/sw.js', '/Graphitube/')">Register with /Graphitube/ scope</button>
+    <button onclick="register('/sw.js', '/')">Register with / scope</button>
+    <button onclick="register('sw.js', './')">Register relative</button>
+    <pre id="regTests">Click buttons to test...</pre>
+  </div>
+  
+  <div class="box">
+    <h2>📊 Current State</h2>
+    <button onclick="checkState()">🔄 Refresh State</button>
+    <button onclick="unregisterAll()">❌ Unregister All</button>
+    <pre id="state">Click refresh to check...</pre>
+  </div>
+
+  <script>
+    // Environment info
+    document.getElementById('env').textContent = `
+Location: ${window.location.href}
+Origin: ${window.location.origin}
+Pathname: ${window.location.pathname}
+Base URL: /Graphitube/
+Secure: ${window.isSecureContext}
+SW Support: ${'serviceWorker' in navigator}
+    `.trim();
+    
+    // Test if file exists
+    async function testFile(url) {
+      const output = document.getElementById('fileTests');
+      output.innerHTML = `<span class="warning">Testing: ${url}...</span>\n`;
+      
+      try {
+        const response = await fetch(url);
+        const text = await response.text();
+        
+        if (response.ok) {
+          output.innerHTML = `<span class="success">✅ SUCCESS: ${url}</span>
+Status: ${response.status} ${response.statusText}
+URL: ${response.url}
+Type: ${response.headers.get('content-type')}
+Size: ${text.length} bytes
+First line: ${text.split('\n')[0]}
+
+Full content preview:
+${text.substring(0, 500)}...`;
+        } else {
+          output.innerHTML = `<span class="error">❌ FAILED: ${url}</span>
+Status: ${response.status} ${response.statusText}
+URL: ${response.url}`;
+        }
+      } catch (error) {
+        output.innerHTML = `<span class="error">❌ ERROR: ${url}</span>
+${error.message}`;
+      }
+    }
+    
+    // Register SW
+    async function register(url, scope) {
+      const output = document.getElementById('regTests');
+      output.innerHTML = `<span class="warning">Registering: ${url} with scope: ${scope}...</span>\n`;
+      
+      if (!('serviceWorker' in navigator)) {
+        output.innerHTML = `<span class="error">❌ Service Worker not supported!</span>`;
+        return;
+      }
+      
+      try {
+        const registration = await navigator.serviceWorker.register(url, {
+          scope: scope,
+          type: 'classic',
+          updateViaCache: 'none'
+        });
+        
+        output.innerHTML = `<span class="success">✅ REGISTERED SUCCESSFULLY!</span>
+URL: ${url}
+Scope: ${registration.scope}
+Installing: ${registration.installing?.state || 'none'}
+Waiting: ${registration.waiting?.state || 'none'}  
+Active: ${registration.active?.state || 'none'}
+
+Wait a few seconds and click "Refresh State" to see updates...`;
+        
+        // Auto-refresh state after 2 seconds
+        setTimeout(checkState, 2000);
+        
+      } catch (error) {
+        output.innerHTML = `<span class="error">❌ REGISTRATION FAILED!</span>
+URL: ${url}
+Scope: ${scope}
+Error: ${error.name}
+Message: ${error.message}`;
+      }
+    }
+    
+    // Check current state
+    async function checkState() {
+      const output = document.getElementById('state');
+      
+      if (!('serviceWorker' in navigator)) {
+        output.textContent = 'Service Worker not supported!';
+        return;
+      }
+      
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      
+      if (registrations.length === 0) {
+        output.innerHTML = `<span class="warning">⚠️ NO REGISTRATIONS FOUND</span>`;
+      } else {
+        let html = `<span class="success">✅ Found ${registrations.length} registration(s):</span>\n\n`;
+        
+        registrations.forEach((reg, i) => {
+          html += `Registration #${i + 1}:
+  Scope: ${reg.scope}
+  Active: ${reg.active?.state || 'none'}
+  Script: ${reg.active?.scriptURL || 'N/A'}
+  Installing: ${reg.installing?.state || 'none'}
+  Waiting: ${reg.waiting?.state || 'none'}
+
+`;
+        });
+        
+        if (navigator.serviceWorker.controller) {
+          html += `<span class="success">✅ Page is CONTROLLED by:</span>
+${navigator.serviceWorker.controller.scriptURL}`;
+        } else {
+          html += `<span class="warning">⏳ Page NOT controlled (refresh may be needed)</span>`;
+        }
+        
+        output.innerHTML = html;
+      }
+    }
+    
+    // Unregister all
+    async function unregisterAll() {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      
+      for (const reg of registrations) {
+        await reg.unregister();
+      }
+      
+      alert(`✅ Unregistered ${registrations.length} service worker(s)`);
+      checkState();
+    }
+    
+    // Auto-refresh state every 3 seconds
+    setInterval(checkState, 3000);
+    checkState();
+  </script>
+</body>
+</html>

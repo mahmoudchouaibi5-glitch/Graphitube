@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Graphitube PWA Test - اختبار PWA</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .container {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      padding: 40px;
+      max-width: 800px;
+      width: 100%;
+    }
+    
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+    
+    h2 {
+      color: #8B4513;
+      margin-top: 30px;
+      margin-bottom: 15px;
+      font-size: 20px;
+      border-bottom: 2px solid #8B4513;
+      padding-bottom: 5px;
+    }
+    
+    .status-box {
+      padding: 15px;
+      border-radius: 10px;
+      margin: 10px 0;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    
+    .success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    
+    .error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    
+    .warning {
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeaa7;
+    }
+    
+    .info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+    
+    code {
+      background: #f4f4f4;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+    }
+    
+    .btn {
+      background: #8B4513;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 10px 5px;
+      transition: all 0.3s;
+    }
+    
+    .btn:hover {
+      background: #6d3610;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(139, 69, 19, 0.3);
+    }
+    
+    .btn:active {
+      transform: translateY(0);
+    }
+    
+    ul {
+      margin: 10px 0;
+      padding-right: 20px;
+    }
+    
+    li {
+      margin: 5px 0;
+    }
+    
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #8B4513;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      vertical-align: middle;
+      margin-left: 10px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧪 Graphitube PWA Test</h1>
+    <p style="color: #666; margin-bottom: 20px;">اختبار شامل لـ Service Worker و PWA</p>
+    
+    <div id="results"></div>
+    
+    <h2>🔧 أدوات الاختبار</h2>
+    <button class="btn" onclick="checkSW()">🔄 إعادة الفحص</button>
+    <button class="btn" onclick="unregisterAll()">❌ إلغاء كل Service Workers</button>
+    <button class="btn" onclick="clearCaches()">🗑️ مسح كل الـ Caches</button>
+    <button class="btn" onclick="testOffline()">📡 اختبار Offline Mode</button>
+    
+    <h2>📊 معلومات النظام</h2>
+    <div id="systemInfo" class="info status-box">
+      <strong>المتصفح:</strong> <span id="browser"></span><br>
+      <strong>النظام:</strong> <span id="os"></span><br>
+      <strong>Online:</strong> <span id="online"></span>
+    </div>
+  </div>
+
+  <script>
+    const resultsDiv = document.getElementById('results');
+    
+    function log(message, type = 'info') {
+      const div = document.createElement('div');
+      div.className = `status-box ${type}`;
+      div.innerHTML = message;
+      resultsDiv.appendChild(div);
+    }
+    
+    function clearResults() {
+      resultsDiv.innerHTML = '';
+    }
+    
+    async function checkSW() {
+      clearResults();
+      log('🔍 بدء الفحص... <span class="loading"></span>', 'info');
+      
+      // 1. Check SW support
+      if (!('serviceWorker' in navigator)) {
+        log('❌ <strong>خطأ:</strong> Service Worker غير مدعوم في هذا المتصفح!', 'error');
+        return;
+      }
+      
+      log('✅ Service Worker API مدعوم', 'success');
+      
+      // 2. Check current registrations
+      try {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        
+        if (registrations.length === 0) {
+          log('⚠️ <strong>تحذير:</strong> لا يوجد Service Workers مسجل حالياً!<br>' +
+              '💡 جرب فتح الصفحة الرئيسية أولاً: <code>/Graphitube/</code>', 'warning');
+        } else {
+          log(`✅ تم العثور على <strong>${registrations.length}</strong> Service Worker(s)`, 'success');
+          
+          registrations.forEach((reg, i) => {
+            const scope = reg.scope;
+            const active = reg.active;
+            const waiting = reg.waiting;
+            const installing = reg.installing;
+            
+            let details = `<strong>Registration #${i + 1}:</strong><br>`;
+            details += `📍 <strong>Scope:</strong> <code>${scope}</code><br>`;
+            
+            if (active) {
+              details += `✅ <strong>Active:</strong> ${active.state}<br>`;
+              details += `📄 <strong>Script:</strong> <code>${active.scriptURL}</code>`;
+            }
+            if (waiting) {
+              details += `<br>⏳ <strong>Waiting:</strong> ${waiting.state}`;
+            }
+            if (installing) {
+              details += `<br>🔧 <strong>Installing:</strong> ${installing.state}`;
+            }
+            
+            log(details, 'info');
+          });
+        }
+        
+        // 3. Check if page is controlled
+        if (navigator.serviceWorker.controller) {
+          log(`✅ الصفحة محكومة بواسطة Service Worker<br>` +
+              `📄 Script: <code>${navigator.serviceWorker.controller.scriptURL}</code>`, 'success');
+        } else {
+          log('⏳ الصفحة غير محكومة بعد - قد تحتاج إلى تحديث الصفحة', 'warning');
+        }
+        
+        // 4. Check caches
+        const cacheNames = await caches.keys();
+        if (cacheNames.length > 0) {
+          log(`💾 <strong>Caches:</strong> ${cacheNames.length} cache(s) موجود<br>` +
+              cacheNames.map(name => `- <code>${name}</code>`).join('<br>'), 'info');
+        } else {
+          log('📦 لا توجد caches حالياً', 'info');
+        }
+        
+      } catch (error) {
+        log(`❌ <strong>خطأ:</strong> ${error.message}`, 'error');
+      }
+    }
+    
+    async function unregisterAll() {
+      if (!confirm('هل أنت متأكد من إلغاء كل Service Workers؟')) return;
+      
+      try {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        
+        for (const registration of registrations) {
+          await registration.unregister();
+        }
+        
+        log(`✅ تم إلغاء ${registrations.length} Service Worker(s)`, 'success');
+        setTimeout(checkSW, 1000);
+      } catch (error) {
+        log(`❌ فشل الإلغاء: ${error.message}`, 'error');
+      }
+    }
+    
+    async function clearCaches() {
+      if (!confirm('هل أنت متأكد من مسح كل الـ Caches؟')) return;
+      
+      try {
+        const cacheNames = await caches.keys();
+        
+        for (const name of cacheNames) {
+          await caches.delete(name);
+        }
+        
+        log(`✅ تم مسح ${cacheNames.length} cache(s)`, 'success');
+        setTimeout(checkSW, 1000);
+      } catch (error) {
+        log(`❌ فشل المسح: ${error.message}`, 'error');
+      }
+    }
+    
+    async function testOffline() {
+      log('📡 اختبار Offline Mode...', 'info');
+      
+      if (!navigator.serviceWorker.controller) {
+        log('⚠️ لا يمكن اختبار Offline - الصفحة غير محكومة بواسطة SW', 'warning');
+        return;
+      }
+      
+      try {
+        // Try to fetch the main page
+        const response = await fetch('/Graphitube/');
+        
+        if (response.ok) {
+          log('✅ الصفحة الرئيسية متاحة (من الـ cache أو الشبكة)', 'success');
+        } else {
+          log(`⚠️ استجابة غير متوقعة: ${response.status}`, 'warning');
+        }
+      } catch (error) {
+        log(`❌ فشل الـ fetch: ${error.message}`, 'error');
+      }
+    }
+    
+    // System info
+    document.getElementById('browser').textContent = navigator.userAgent.split(' ').pop();
+    document.getElementById('os').textContent = navigator.platform;
+    document.getElementById('online').textContent = navigator.onLine ? '✅ متصل' : '❌ غير متصل';
+    
+    window.addEventListener('online', () => {
+      document.getElementById('online').textContent = '✅ متصل';
+    });
+    
+    window.addEventListener('offline', () => {
+      document.getElementById('online').textContent = '❌ غير متصل';
+    });
+    
+    // Auto-run on load
+    window.addEventListener('load', () => {
+      setTimeout(checkSW, 500);
+    });
+  </script>
+</body>
+</html>

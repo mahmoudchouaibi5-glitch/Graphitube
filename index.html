@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- GitHub Pages SPA redirect restoration -->
+    <script>
+      // This script checks for a redirect stored by 404.html
+      (function() {
+        const redirect = sessionStorage.getItem('redirect');
+        if (redirect && redirect !== '/') {
+          sessionStorage.removeItem('redirect');
+          history.replaceState(null, null, redirect);
+        }
+      })();
+    </script>
+    
+    <!-- Primary Meta Tags -->
+    <title>Graphitube - مصمم المطابخ والصالونات</title>
+    <meta name="title" content="Graphitube - Kitchen & Salon Design" />
+    <meta name="description" content="نظام احترافي لطلب عروض أسعار المطابخ والصالونات المخصصة | Professional quotation system for custom kitchens and salons" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Graphitube - Kitchen & Salon Design" />
+    <meta property="og:description" content="نظام احترافي لطلب عروض أسعار المطابخ والصالونات المخصصة" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:title" content="Graphitube - Kitchen & Salon Design" />
+    <meta property="twitter:description" content="نظام احترافي لطلب عروض أسعار المطابخ والصالونات المخصصة" />
+    
+    <!-- PWA -->
+    <meta name="theme-color" content="#8B4513" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Graphitube" />
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml" href="/Graphitube/icon.svg" />
+    <link rel="apple-touch-icon" href="/Graphitube/icon-192.png" />
+    
+    <!-- Manifest will be injected by VitePWA plugin -->
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

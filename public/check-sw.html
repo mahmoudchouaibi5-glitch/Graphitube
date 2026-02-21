@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Service Worker Check</title>
+  <style>
+    body {
+      font-family: monospace;
+      padding: 20px;
+      background: #1a1a1a;
+      color: #00ff00;
+    }
+    .section {
+      margin: 20px 0;
+      padding: 15px;
+      border: 1px solid #00ff00;
+      border-radius: 5px;
+    }
+    .error {
+      color: #ff0000;
+    }
+    .success {
+      color: #00ff00;
+    }
+    .warning {
+      color: #ffaa00;
+    }
+    button {
+      background: #00ff00;
+      color: #1a1a1a;
+      border: none;
+      padding: 10px 20px;
+      margin: 5px;
+      cursor: pointer;
+      font-family: monospace;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔍 Service Worker Diagnostics</h1>
+  
+  <div class="section">
+    <h2>Environment</h2>
+    <div id="env"></div>
+  </div>
+  
+  <div class="section">
+    <h2>Service Worker Support</h2>
+    <div id="support"></div>
+  </div>
+  
+  <div class="section">
+    <h2>Current Registrations</h2>
+    <div id="registrations"></div>
+    <button onclick="checkRegistrations()">🔄 Refresh</button>
+  </div>
+  
+  <div class="section">
+    <h2>Manual Registration Test</h2>
+    <button onclick="registerCustomSW()">✅ Register Custom SW (/Graphitube/sw.js)</button>
+    <button onclick="testSWFile()">🔍 Test SW File Exists</button>
+    <div id="regResult"></div>
+  </div>
+  
+  <div class="section">
+    <h2>Actions</h2>
+    <button onclick="unregisterAll()">❌ Unregister All</button>
+    <button onclick="clearCaches()">🗑️ Clear Caches</button>
+    <button onclick="clearStorage()">🗑️ Clear Storage</button>
+  </div>
+
+  <script>
+    // Environment Info
+    document.getElementById('env').innerHTML = `
+      <p>Location: ${window.location.href}</p>
+      <p>Origin: ${window.location.origin}</p>
+      <p>Secure Context: ${window.isSecureContext}</p>
+      <p>Base URL: /Graphitube/</p>
+    `;
+    
+    // Support Check
+    if ('serviceWorker' in navigator) {
+      document.getElementById('support').innerHTML = '<p class="success">✅ Service Worker API is supported</p>';
+    } else {
+      document.getElementById('support').innerHTML = '<p class="error">❌ Service Worker API NOT supported</p>';
+    }
+    
+    // Check registrations on load
+    checkRegistrations();
+    
+    async function checkRegistrations() {
+      if (!('serviceWorker' in navigator)) {
+        document.getElementById('registrations').innerHTML = '<p class="error">Not supported</p>';
+        return;
+      }
+      
+      const regs = await navigator.serviceWorker.getRegistrations();
+      
+      if (regs.length === 0) {
+        document.getElementById('registrations').innerHTML = '<p class="warning">⚠️ No registrations found</p>';
+      } else {
+        let html = `<p class="success">✅ Found ${regs.length} registration(s):</p>`;
+        regs.forEach((reg, i) => {
+          html += `
+            <div style="margin: 10px 0; padding: 10px; border: 1px solid #444;">
+              <p><strong>Registration ${i + 1}:</strong></p>
+              <p>Scope: ${reg.scope}</p>
+              <p>Active: ${reg.active?.state || 'none'} (${reg.active?.scriptURL || 'N/A'})</p>
+              <p>Installing: ${reg.installing?.state || 'none'}</p>
+              <p>Waiting: ${reg.waiting?.state || 'none'}</p>
+            </div>
+          `;
+        });
+        
+        if (navigator.serviceWorker.controller) {
+          html += `<p class="success">✅ Page is controlled by: ${navigator.serviceWorker.controller.scriptURL}</p>`;
+        } else {
+          html += `<p class="warning">⏳ Page not controlled (refresh needed)</p>`;
+        }
+        
+        document.getElementById('registrations').innerHTML = html;
+      }
+    }
+    
+    async function registerCustomSW() {
+      const result = document.getElementById('regResult');
+      result.innerHTML = '<p>Attempting to register /Graphitube/sw.js...</p>';
+      
+      try {
+        const reg = await navigator.serviceWorker.register('/Graphitube/sw.js', {
+          type: 'classic',
+          scope: '/Graphitube/'
+        });
+        result.innerHTML = `<p class="success">✅ Registered successfully!</p><p>Scope: ${reg.scope}</p>`;
+        setTimeout(checkRegistrations, 500);
+      } catch (error) {
+        result.innerHTML = `<p class="error">❌ Failed: ${error.message}</p>`;
+      }
+    }
+    
+    async function testSWFile() {
+      const result = document.getElementById('regResult');
+      result.innerHTML = '<p>Testing if /Graphitube/sw.js exists...</p>';
+      
+      try {
+        const response = await fetch('/Graphitube/sw.js');
+        if (response.ok) {
+          result.innerHTML = `<p class="success">✅ File exists!</p>`;
+        } else {
+          result.innerHTML = `<p class="error">❌ File does not exist: ${response.statusText}</p>`;
+        }
+      } catch (error) {
+        result.innerHTML = `<p class="error">❌ Failed: ${error.message}</p>`;
+      }
+    }
+    
+    async function unregisterAll() {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      for (const reg of regs) {
+        await reg.unregister();
+      }
+      alert('✅ All service workers unregistered!');
+      checkRegistrations();
+    }
+    
+    async function clearCaches() {
+      const keys = await caches.keys();
+      for (const key of keys) {
+        await caches.delete(key);
+      }
+      alert(`✅ Cleared ${keys.length} cache(s)!`);
+    }
+    
+    function clearStorage() {
+      localStorage.clear();
+      sessionStorage.clear();
+      alert('✅ Storage cleared!');
+    }
+    
+    // Auto-refresh every 2 seconds
+    setInterval(checkRegistrations, 2000);
+  </script>
+</body>
+</html>
