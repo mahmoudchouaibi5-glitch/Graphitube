@@ -10,9 +10,12 @@
     "preview": "vite preview",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
+    "deploy:quick": "chmod +x deploy.sh && ./deploy.sh",
     "clean": "rm -rf .vite dist node_modules/.vite",
     "clean:all": "rm -rf node_modules dist .vite package-lock.json",
-    "fresh": "npm run clean:all && npm install && npm run dev"
+    "fresh": "npm run clean:all && npm install && npm run dev",
+    "diagnose": "chmod +x diagnose.sh && ./diagnose.sh",
+    "fix": "chmod +x fix-white-page.sh && ./fix-white-page.sh"
   },
   "dependencies": {
     "@emotion/react": "11.14.0",
