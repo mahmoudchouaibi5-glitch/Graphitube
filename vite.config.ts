@@ -144,6 +144,9 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: false,
     manifest: true,
+    // Ensure all paths are relative to base
+    assetsDir: 'assets',
+    emptyOutDir: true,
     commonjsOptions: {
       include: [/three/, /node_modules/],
     },
