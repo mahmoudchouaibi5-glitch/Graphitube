@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مسح Service Worker - Graphitube</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            text-align: center;
+        }
+        h1 {
+            color: #667eea;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+        .status {
+            background: #f3f4f6;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: right;
+        }
+        .status-item {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .status-item.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .status-item.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .status-item.info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            margin: 10px;
+            transition: all 0.3s;
+        }
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .danger {
+            background: #ef4444;
+        }
+        .danger:hover {
+            background: #dc2626;
+        }
+        .success {
+            background: #10b981;
+        }
+        .success:hover {
+            background: #059669;
+        }
+        #log {
+            background: #1f2937;
+            color: #10b981;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 20px;
+            text-align: left;
+            direction: ltr;
+        }
+        .log-entry {
+            margin: 3px 0;
+        }
+        .log-error { color: #ef4444; }
+        .log-success { color: #10b981; }
+        .log-info { color: #3b82f6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🗑️ مسح Service Worker القديم</h1>
+        
+        <p style="color: #374151; margin-bottom: 20px;">
+            المشكلة: Service Worker مسجل بدون <code>/Graphitube/</code> في المسار
+        </p>
+        
+        <div class="status" id="status">
+            <div class="status-item info">
+                <span>جاري الفحص...</span>
+                <span>⏳</span>
+            </div>
+        </div>
+        
+        <div>
+            <button onclick="checkStatus()">🔍 فحص الحالة</button>
+            <button onclick="clearAll()" class="danger">🗑️ مسح كلشي</button>
+            <button onclick="reloadApp()" class="success" id="reload-btn" disabled>♻️ إعادة التحميل</button>
+        </div>
+        
+        <div id="log"></div>
+    </div>
+    
+    <script>
+        const statusDiv = document.getElementById('status');
+        const logDiv = document.getElementById('log');
+        const reloadBtn = document.getElementById('reload-btn');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString('ar-MA');
+            const className = `log-${type}`;
+            const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+            
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${className}`;
+            entry.textContent = `[${timestamp}] ${icon} ${message}`;
+            
+            logDiv.appendChild(entry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            
+            console.log(`[${type.toUpperCase()}]`, message);
+        }
+        
+        async function checkStatus() {
+            statusDiv.innerHTML = '';
+            log('بدء الفحص...');
+            
+            // Check Service Worker
+            if ('serviceWorker' in navigator) {
+                log('Service Worker API مدعوم', 'success');
+                
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                log(`وجدنا ${registrations.length} Service Worker(s)`, 'info');
+                
+                if (registrations.length === 0) {
+                    addStatus('✅ لا يوجد Service Workers', 'success');
+                    addStatus('المشكلة محلولة!', 'success');
+                    reloadBtn.disabled = false;
+                } else {
+                    registrations.forEach((reg, i) => {
+                        const scope = reg.scope;
+                        log(`SW ${i + 1}: ${scope}`, 'info');
+                        
+                        if (scope.includes('/Graphitube/')) {
+                            addStatus(`✅ SW ${i + 1}: ${scope}`, 'success');
+                        } else {
+                            addStatus(`❌ SW ${i + 1}: ${scope} (خاطئ!)`, 'error');
+                        }
+                    });
+                    addStatus('⚠️ خاصك تمسح Service Workers القديمة', 'error');
+                }
+            } else {
+                addStatus('❌ Service Worker غير مدعوم', 'error');
+                log('Service Worker API غير متوفر', 'error');
+            }
+            
+            // Check Cache
+            if ('caches' in window) {
+                const cacheNames = await caches.keys();
+                log(`وجدنا ${cacheNames.length} Cache(s)`, 'info');
+                
+                if (cacheNames.length > 0) {
+                    addStatus(`ℹ️ Cache: ${cacheNames.length} مخزون`, 'info');
+                    cacheNames.forEach(name => {
+                        log(`  - ${name}`, 'info');
+                    });
+                }
+            }
+            
+            // Check Local Storage
+            const storageSize = Object.keys(localStorage).length;
+            log(`Local Storage: ${storageSize} عنصر`, 'info');
+            
+            log('اكتمل الفحص', 'success');
+        }
+        
+        function addStatus(text, type) {
+            const item = document.createElement('div');
+            item.className = `status-item ${type}`;
+            item.innerHTML = `<span>${text}</span>`;
+            statusDiv.appendChild(item);
+        }
+        
+        async function clearAll() {
+            if (!confirm('هل أنت متأكد من مسح كل البيانات؟\n\nهذا سيمسح:\n- Service Workers\n- Cache\n- Local Storage\n- Session Storage')) {
+                return;
+            }
+            
+            log('═══════════════════════════════════', 'info');
+            log('بدء عملية المسح الكامل...', 'info');
+            log('═══════════════════════════════════', 'info');
+            
+            let success = true;
+            
+            // 1. Unregister all Service Workers
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    log(`جاري مسح ${registrations.length} Service Worker(s)...`, 'info');
+                    
+                    for (const reg of registrations) {
+                        const scope = reg.scope;
+                        await reg.unregister();
+                        log(`✅ تم مسح: ${scope}`, 'success');
+                    }
+                    
+                    if (registrations.length > 0) {
+                        log('✅ تم مسح جميع Service Workers', 'success');
+                    }
+                } catch (error) {
+                    log(`❌ خطأ في مسح Service Workers: ${error.message}`, 'error');
+                    success = false;
+                }
+            }
+            
+            // 2. Clear all caches
+            if ('caches' in window) {
+                try {
+                    const cacheNames = await caches.keys();
+                    log(`جاري مسح ${cacheNames.length} Cache(s)...`, 'info');
+                    
+                    for (const name of cacheNames) {
+                        await caches.delete(name);
+                        log(`✅ تم مسح Cache: ${name}`, 'success');
+                    }
+                    
+                    if (cacheNames.length > 0) {
+                        log('✅ تم مسح جميع Caches', 'success');
+                    }
+                } catch (error) {
+                    log(`❌ خطأ في مسح Caches: ${error.message}`, 'error');
+                    success = false;
+                }
+            }
+            
+            // 3. Clear Local Storage
+            try {
+                const lsCount = Object.keys(localStorage).length;
+                localStorage.clear();
+                if (lsCount > 0) {
+                    log(`✅ تم مسح Local Storage (${lsCount} عنصر)`, 'success');
+                }
+            } catch (error) {
+                log(`❌ خطأ في مسح Local Storage: ${error.message}`, 'error');
+                success = false;
+            }
+            
+            // 4. Clear Session Storage
+            try {
+                const ssCount = Object.keys(sessionStorage).length;
+                sessionStorage.clear();
+                if (ssCount > 0) {
+                    log(`✅ تم مسح Session Storage (${ssCount} عنصر)`, 'success');
+                }
+            } catch (error) {
+                log(`❌ خطأ في مسح Session Storage: ${error.message}`, 'error');
+                success = false;
+            }
+            
+            // 5. Clear IndexedDB
+            if ('indexedDB' in window) {
+                try {
+                    const dbs = await indexedDB.databases();
+                    for (const db of dbs) {
+                        indexedDB.deleteDatabase(db.name);
+                        log(`✅ تم مسح IndexedDB: ${db.name}`, 'success');
+                    }
+                } catch (error) {
+                    log(`⚠️ تحذير: ${error.message}`, 'info');
+                }
+            }
+            
+            log('═══════════════════════════════════', 'info');
+            if (success) {
+                log('🎉 اكتملت عملية المسح بنجاح!', 'success');
+                log('يمكنك الآن إعادة التحميل', 'success');
+                reloadBtn.disabled = false;
+                
+                statusDiv.innerHTML = '<div class="status-item success"><span>✅ تم المسح بنجاح!</span></div>';
+            } else {
+                log('⚠️ اكتملت مع بعض الأخطاء', 'error');
+            }
+            log('═══════════════════════════════════', 'info');
+            
+            // Re-check status
+            setTimeout(checkStatus, 1000);
+        }
+        
+        function reloadApp() {
+            log('جاري إعادة التحميل...', 'info');
+            
+            // Redirect to main app with cache busting
+            const timestamp = Date.now();
+            window.location.href = `/Graphitube/?v=${timestamp}`;
+        }
+        
+        // Auto-check on load
+        window.addEventListener('DOMContentLoaded', () => {
+            log('═══════════════════════════════════', 'info');
+            log('🔧 Graphitube - Clear Service Worker', 'info');
+            log('═══════════════════════════════════', 'info');
+            checkStatus();
+        });
+    </script>
+</body>
+</html>
