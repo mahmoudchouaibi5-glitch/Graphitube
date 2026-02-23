@@ -1,12 +1,10 @@
+import { Save, Home, Camera, Download, FileJson, Receipt, Menu, X } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { LanguageSwitcher } from '../LanguageSwitcher';
 import { getKitchenTranslation } from './translations';
+import logoImage from 'figma:asset/6f91f3b908b32fa8844a582da8663295bc35c793.png';
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Menu, X, Save, Camera, Download, FileText, Home } from 'lucide-react';
-
-// Use public asset instead of figma:asset
-const logoImage = '/icon.svg';
 
 interface TopBarProps {
   onSave: () => void;
@@ -100,7 +98,7 @@ export function TopBar({ onSave, onScreenshot, onExport, onRequestQuote }: TopBa
                   }}
                   className={`w-full flex items-center gap-3 px-4 py-3 text-purple-700 hover:bg-purple-50 transition-colors border-b border-gray-100 ${isRTL ? 'flex-row-reverse text-right' : 'text-left'}`}
                 >
-                  <FileText className="w-5 h-5" />
+                  <FileJson className="w-5 h-5" />
                   <span className="text-sm font-medium">
                     {getKitchenTranslation(language, 'exportJson')}
                   </span>
@@ -116,7 +114,7 @@ export function TopBar({ onSave, onScreenshot, onExport, onRequestQuote }: TopBa
                   }}
                   className={`w-full flex items-center gap-3 px-4 py-3 text-green-700 hover:bg-green-50 transition-colors border-b border-gray-100 ${isRTL ? 'flex-row-reverse text-right' : 'text-left'}`}
                 >
-                  <Download className="w-5 h-5" />
+                  <Receipt className="w-5 h-5" />
                   <span className="text-sm font-medium">
                     {getKitchenTranslation(language, 'requestQuote')}
                   </span>

@@ -13,12 +13,10 @@ import { SalonStep7Color } from './SalonStep7Color';
 import { SalonStep8Summary } from './SalonStep8Summary';
 import { SalonFormData } from '../../types';
 import { useLanguage } from '../../contexts/LanguageContext';
+import logoImage from 'figma:asset/6f91f3b908b32fa8844a582da8663295bc35c793.png';
 import { projectId, publicAnonKey } from '/utils/supabase/info';
 import { getStepFromPath, getUrlFromStep } from '../../utils/routeHelpers';
 import { useSoundEffects } from '../../hooks/useSoundEffects';
-
-// Use public asset instead of figma:asset
-const logoImage = '/icon.svg';
 
 interface SalonWizardProps {
   onSubmit: (data: SalonFormData) => void;

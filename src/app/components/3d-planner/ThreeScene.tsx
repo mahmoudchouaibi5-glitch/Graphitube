@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { PlacedObject } from './KitchenPlanner3D';
 import { create3DObject, ObjectType, applyColorToObject } from './create3DObjects';
 

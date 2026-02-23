@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation, Routes, Route, Navigate } from 'react-router';
-import { Home, ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router';
 import { Button } from '../ui/button';
+import { ArrowRight, ArrowLeft, Home, Loader2 } from 'lucide-react';
 import { ProgressIndicator } from '../ProgressIndicator';
 import { Step1CustomerInfo } from '../kitchen/Step1CustomerInfo';
 import { KitchenStep2Design } from './KitchenStep2Design';
@@ -23,11 +23,9 @@ import { KitchenStep17Design3D } from './KitchenStep17Design3D';
 import { KitchenStep18Summary } from './KitchenStep18Summary';
 import { CompleteKitchenFormData } from '../../types/kitchen';
 import { useLanguage } from '../../contexts/LanguageContext';
+import logoImage from 'figma:asset/6f91f3b908b32fa8844a582da8663295bc35c793.png';
 import { getStepFromPath, getUrlFromStep } from '../../utils/routeHelpers';
 import { useSoundEffects } from '../../hooks/useSoundEffects';
-
-// Use public asset instead of figma:asset
-const logoImage = '/icon.svg';
 
 interface KitchenWizardProps {
   onSubmit: (data: CompleteKitchenFormData) => void;

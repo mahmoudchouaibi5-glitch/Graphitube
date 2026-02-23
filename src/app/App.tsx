@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'; // Changed from 'react-router' to 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router';
 import { SalonWizard } from './components/salon/SalonWizard';
 import { KitchenWizard } from './components/kitchen-wizard/KitchenWizard';
 import { SuccessPage } from './components/SuccessPage';
@@ -14,9 +14,6 @@ import { runMigrations } from './utils/migrateData';
 import { useSoundEffects } from './hooks/useSoundEffects';
 import { Toaster } from './components/ui/sonner';
 import { KitchenPlanner3D } from './components/3d-planner/KitchenPlanner3D';
-import { OfflineIndicator, OfflineBanner } from './components/OfflineIndicator';
-import { requestQueue } from './utils/requestQueue';
-import { useNetworkStatus } from './hooks/useNetworkStatus';
 
 type Page = 'home' | 'kitchen' | 'salon' | 'success';
 
@@ -24,14 +21,10 @@ export default function App() {
   // Run data migrations on app load
   useEffect(() => {
     runMigrations();
-    
-    // Service Worker is now managed by VitePWA in main.tsx
-    // Just log that the app is ready
-    console.log('✅ [App] Application initialized - PWA ready!');
   }, []);
 
   return (
-    <BrowserRouter basename={import.meta.env.BASE_URL}>
+    <BrowserRouter>
       <LanguageProvider>
         <AppContent />
       </LanguageProvider>
@@ -45,7 +38,6 @@ function AppContent() {
   const [submittedData, setSubmittedData] = useState<CompleteKitchenFormData | SalonFormData | null>(null);
   const { language } = useLanguage();
   const { playSound } = useSoundEffects();
-  const { isOnline } = useNetworkStatus();
 
   const handleProjectSelect = (type: 'kitchen' | 'salon') => {
     // Navigation is handled by HomePage now
@@ -68,34 +60,11 @@ function AppContent() {
     }, 150); // Update every 150ms
     
     try {
-      setSubmitProgress(10); // 10%: Starting request
-      
-      // Check if online
-      if (!isOnline) {
-        // Queue for later
-        console.log('📡 Offline - queuing request for later submission');
-        await requestQueue.queueRequest('kitchen', data);
-        
-        clearInterval(progressInterval);
-        setSubmitProgress(100);
-        
-        playSound('submit');
-        
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        alert(language === 'ar' 
-          ? '✅ تم حفظ طلبك! سيتم إرساله تلقائياً عند عودة الاتصال بالإنترنت.' 
-          : '✅ Demande sauvegardée! Elle sera envoyée automatiquement à la reconnexion.');
-        
-        setSubmittedData(data);
-        return;
-      }
-      
-      // Online - send immediately
       const url = `https://${projectId}.supabase.co/functions/v1/make-server-273c94cc/submit-quote`;
       console.log('📡 Sending to API:', url);
       console.log('📤 Request Body:', JSON.stringify(data, null, 2));
       
+      setSubmitProgress(10); // 10%: Starting request
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -132,16 +101,7 @@ function AppContent() {
       clearInterval(progressInterval);
       console.error('❌ Failed to submit:', error);
       playSound('error'); // 🔊 صوت الخطأ
-      
-      // Queue the request for retry
-      console.log('📡 Network error - queuing request for later');
-      await requestQueue.queueRequest('kitchen', data);
-      
-      alert(language === 'ar'
-        ? '⚠️ فشل الإرسال - تم حفظ طلبك وسيتم إرساله تلقائياً لاحقاً'
-        : '⚠️ Échec de l\'envoi - demande sauvegardée pour envoi automatique');
-      
-      setSubmittedData(data);
+      alert('حدث خطأ أثناء إرسال الطلب. يرجى المحاولة مرة أخرى.');
     } finally {
       setIsSubmitting(false);
       setSubmitProgress(0);
@@ -165,32 +125,9 @@ function AppContent() {
     }, 150);
     
     try {
-      setSubmitProgress(10);
-      
-      // Check if online
-      if (!isOnline) {
-        // Queue for later
-        console.log('📡 Offline - queuing salon request for later submission');
-        await requestQueue.queueRequest('salon', data);
-        
-        clearInterval(progressInterval);
-        setSubmitProgress(100);
-        
-        playSound('submit');
-        
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        alert(language === 'ar' 
-          ? '✅ تم حفظ طلبك! سيتم إرساله تلقائياً عند عودة الاتصال بالإنترنت.' 
-          : '✅ Demande sauvegardée! Elle sera envoyée automatiquement à la reconnexion.');
-        
-        setSubmittedData(data);
-        return;
-      }
-      
-      // Online - send immediately
       const url = `https://${projectId}.supabase.co/functions/v1/make-server-273c94cc/submit-quote`;
       
+      setSubmitProgress(10);
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -222,16 +159,7 @@ function AppContent() {
     } catch (error) {
       clearInterval(progressInterval);
       playSound('error');
-      
-      // Queue the request for retry
-      console.log('📡 Network error - queuing salon request for later');
-      await requestQueue.queueRequest('salon', data);
-      
-      alert(language === 'ar'
-        ? '⚠️ فشل الإرسال - تم حفظ طلبك وسيتم إرساله تلقائياً لاحقاً'
-        : '⚠️ Échec de l\'envoi - demande sauvegardée pour envoi automatique');
-      
-      setSubmittedData(data);
+      alert('حدث خطأ أثناء إرسال الطلب. يرجى المحاولة مرة أخرى.');
     } finally {
       setIsSubmitting(false);
       setSubmitProgress(0);
@@ -245,12 +173,6 @@ function AppContent() {
 
   return (
     <div className="app-container" style={{ minHeight: '100vh' }}>
-      {/* Offline Banner - Always at the top */}
-      <OfflineBanner />
-      
-      {/* Offline Notifications - Temporary popups */}
-      <OfflineIndicator />
-      
       {/* Full-page Circular Progress Overlay */}
       {isSubmitting && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[9999] flex items-center justify-center pointer-events-auto">
@@ -304,8 +226,8 @@ function AppContent() {
           } 
         />
         
-        {/* Catch all - stay on home instead of redirecting */}
-        <Route path="*" element={<HomePage onSelectProject={handleProjectSelect} />} />
+        {/* Redirect to Home if no match */}
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </div>
   );

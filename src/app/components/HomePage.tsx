@@ -1,16 +1,14 @@
 import { ChefHat, Sofa, Languages, Sparkles, ArrowLeft, Gift, CheckCircle, Phone, Box } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { useLanguage } from '../contexts/LanguageContext';
+import logoImage from 'figma:asset/6f91f3b908b32fa8844a582da8663295bc35c793.png';
+import kitchenImage from 'figma:asset/b0b59150596a9ef6fe5982059890804bb97b7f84.png';
+import salonImage from 'figma:asset/c64b18e48ca7eeefe0b33eb0c06482c9651e8b83.png';
 import { useSoundEffects } from '../hooks/useSoundEffects';
 import { SoundCard } from './SoundCard';
 import { Button } from './ui/button';
 
 const WHATSAPP_NUMBER = '0612345678';
-
-// Use public assets with correct base path for GitHub Pages
-const logoImage = import.meta.env.BASE_URL + 'icon.svg';
-const kitchenImage = 'https://images.unsplash.com/photo-1556912173-3bb406ef7e77?w=800&h=600&fit=crop';
-const salonImage = 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&h=600&fit=crop';
 
 interface HomePageProps {
   onSelectProject: (type: 'kitchen' | 'salon') => void;

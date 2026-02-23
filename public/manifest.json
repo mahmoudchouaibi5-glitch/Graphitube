@@ -1,0 +1,35 @@
+{
+  "name": "Graphitube - نجارة خشبية مخصصة",
+  "short_name": "Graphitube",
+  "description": "تطبيق طلب عروض أسعار لمشاريع النجارة والمطابخ والصالونات",
+  "start_url": "/Graphitube/",
+  "scope": "/Graphitube/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#795548",
+  "orientation": "portrait",
+  "dir": "rtl",
+  "lang": "ar",
+  "icons": [
+    {
+      "src": "/Graphitube/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/Graphitube/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "screenshots": [
+    {
+      "src": "/Graphitube/screenshot1.png",
+      "sizes": "540x720",
+      "type": "image/png"
+    }
+  ]
+}

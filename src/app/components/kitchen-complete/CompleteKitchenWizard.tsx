@@ -1,12 +1,29 @@
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router';
+import { Button } from '../ui/button';
+import { ArrowRight, ArrowLeft, Home, MessageCircle, Loader2 } from 'lucide-react';
+import { ProgressIndicator } from '../ProgressIndicator';
+import { Step1CustomerInfo } from '../kitchen/Step1CustomerInfo';
+import { Step2KitchenDesign } from '../kitchen/Step2KitchenDesign';
+import { Step3Dimensions } from './steps/Step3Dimensions';
+import { Step4HeightCeiling } from './steps/Step4HeightCeiling';
+import { Step5WorkScope } from './steps/Step5WorkScope';
+import { Step8WoodType } from './steps/Step8WoodType';
+import { Step6Appliances } from './steps/Step6Appliances';
+import { Step7CabinetEquipment } from './steps/Step7CabinetEquipment';
+import { Step9DoorSystem } from './steps/Step9DoorSystem';
+import { Step11MarbleDetails } from './steps/Step11MarbleDetails';
+import { Step12TilesDetails } from './steps/Step12TilesDetails';
+import { Step13ElectricalDetails } from './steps/Step13ElectricalDetails';
+import { Step14PlumbingDetails } from './steps/Step14PlumbingDetails';
+import { Step16GypsumDetails } from './steps/Step16GypsumDetails';
 import { Step19Confirmation } from './steps/Step19Confirmation';
 import { CompleteKitchenFormData } from '../../types/kitchen';
 import { useLanguage } from '../../contexts/LanguageContext';
+import logoImage from 'figma:asset/6f91f3b908b32fa8844a582da8663295bc35c793.png';
 import { LanguageSwitcher } from '../LanguageSwitcher';
 import { getStepFromPath, getUrlFromStep } from '../../utils/routeHelpers';
 import { useSoundEffects } from '../../hooks/useSoundEffects';
-
-// Use public asset instead of figma:asset
-const logoImage = '/icon.svg';
 
 interface CompleteKitchenWizardProps {
   onSubmit: (data: CompleteKitchenFormData) => void;
